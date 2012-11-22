@@ -1,0 +1,2 @@
+#! /bin/bash
+~/pygamePypy/bin/python --jit threshold=10000 run.py

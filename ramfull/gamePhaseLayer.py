@@ -1,33 +1,45 @@
 
+import math
+
 import pyglet
 from pyglet_piss import Actions, Layer
 
 from ramfull.tile import Tile, TileTypes
 from ramfull.images import PlayerImages
+from tickerLayer import TickerLayer
 
-class PlayerLayer(Layer):
+class GamePhaseLayer(Layer):
     """Any layer that shows the players' cursors should derive from this.
     
     Subclasses must define drawPlayer(p), which should probably call 
     drawCursor.
     """
     
+    TICKER = "TICKER"
+    TIMER = 100.0
+    
     def _layerInit(self, scene):
         Layer._layerInit(self, scene)
         
         self.cursor = pyglet.sprite.Sprite(PlayerImages.PLAYER_OUTLINE)
         self.board = self.scene.board
+        if self.TICKER is not None:
+            self.scene.addLayer(TickerLayer(self.TICKER))
+        
+        self.timer = self.TIMER
+        self.timerLabel = pyglet.text.Label(anchor_x = 'center', 
+                anchor_y = 'top')
     
     
     def drawCursor(self, p, x, y):
         self.cursor.image = PlayerImages.PLAYER_OUTLINE
-        self.cursor.color = (255, 255, 255)
+        self.cursor.color = PlayerImages.colors[p.id]
         self.cursor.x = x
         self.cursor.y = y
         self.cursor.draw()
         
         self.cursor.image = PlayerImages.PLAYER_COLOR
-        self.cursor.color = PlayerImages.colors[p.id]
+        self.cursor.color = (255, 255, 255)
         self.cursor.draw()
         
         
@@ -59,13 +71,13 @@ class PlayerLayer(Layer):
             raise ValueError("Unknown orient: " + str(orient))
         
         self.cursor.image = oi
-        self.cursor.color = (255, 255, 255)
+        self.cursor.color = PlayerImages.colors[p.id]
         self.cursor.x = x + xo
         self.cursor.y = y + yo
         self.cursor.draw()
         
         self.cursor.image = ci
-        self.cursor.color = PlayerImages.colors[p.id]
+        self.cursor.color = (255, 255, 255)
         self.cursor.draw()
             
             
@@ -111,4 +123,24 @@ class PlayerLayer(Layer):
             if not p.inGame:
                 continue
             self.drawPlayer(p, p.inGame.x * Tile.SIZE, p.inGame.y * Tile.SIZE)
+            
+        if self.timer is not None:
+            self.timerLabel.x = self.scene.window.width * 0.5
+            self.timerLabel.y = self.scene.window.height
+            toShow = abs(max(math.ceil(self.timer), 0))
+            self.timerLabel.text = "{0:0.0f}".format(toShow)
+            self.timerLabel.font_size = 36
+            self.timerLabel.draw()
+        
+        
+    def onTimer(self):
+        raise NotImplementedError()
+        
+        
+    def onUpdate(self, dt):
+        if self.timer is not None:
+            self.timer -= dt
+            if self.timer <= 0:
+                self.timer = None
+                self.onTimer()
         

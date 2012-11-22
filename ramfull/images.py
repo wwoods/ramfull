@@ -53,4 +53,23 @@ def split4(name):
 split4("PLAYER_OUTLINE")
 split4("PLAYER_COLOR")
 
-PlayerImages.colors = [ (255, 0, 0), (0, 255, 0), (0, 0, 255) ]
+PlayerImages.colors = [ 
+        (255, 0, 0), 
+        (0, 255, 0), 
+        (0, 0, 255),
+        (255, 0, 255),
+        (255, 255, 0),
+        (0, 255, 255),
+        ]
+PlayerImages.names = [
+        "red player",
+        "green player",
+        "blue player",
+        "purple player",
+        "yellow player",
+        "aquamarine player",
+        ]
+PlayerImages.hexColors = [
+        '#{0:02x}{1:02x}{2:02x}'.format(c[0], c[1], c[2])
+        for c in PlayerImages.colors
+        ]

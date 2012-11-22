@@ -2,12 +2,20 @@
 import random
 import pyglet
 
-from ramfull.images import TileImages
+from ramfull.images import PlayerImages, TileImages
 
 class TileTypes(object):
     GRASS = 0
     SEA = 1
     MAX = 2
+    
+    
+class Scorch(pyglet.sprite.Sprite):
+    def __init__(self, x, y, batch):
+        super(Scorch, self).__init__(TileImages.SCORCH, 
+                x = x * Tile.SIZE, y = y * Tile.SIZE,
+                batch = batch)
+        pyglet.clock.schedule_once(lambda dt: self.delete(), 5.0)
         
 
 class Tile(object):
@@ -19,6 +27,8 @@ class Tile(object):
         self.owner = None
         self.object = None
         self.board = board
+        self.isTerritory = False
+        self._scorch = None
         self.x = x
         self.y = y
         # For generation; the castle grounds that this tile belongs to, if 
@@ -32,45 +42,36 @@ class Tile(object):
         self.setType(TileTypes.GRASS)
         
         
+    def scorch(self):
+        self._scorch = Scorch(self.x, self.y, self.sprite.batch)
+        
+        
     def setType(self, type):
         self.type = type
         self.update()
         
         
     def update(self):
+        c = (255, 255, 255)
         if self.type == TileTypes.GRASS:
-            if (self.x + self.y) % 2 == 0:
-                i = TileImages.GRASS_EVEN
+            if not self.isTerritory or self.owner is None:
+                if (self.x + self.y) % 2 == 0:
+                    i = TileImages.GRASS_EVEN
+                else:
+                    i = TileImages.GRASS_ODD
             else:
-                i = TileImages.GRASS_ODD
+                c = PlayerImages.colors[self.owner.id]
+                if (self.x + self.y) % 2 == 0:
+                    i = TileImages.TERRITORY_EVEN
+                else:
+                    i = TileImages.TERRITORY_ODD
         elif self.type == TileTypes.SEA:
             if random.random() < 0.05:
                 i = TileImages.SEA_ODD
             else:
                 i = TileImages.SEA
-        elif self.type == TileTypes.WALL:
-            m = tuple(True if t and t.type == TileTypes.WALL else False 
-                      for t in self.neighbors)
-            i = {
-                 ( False, False, False, False ): TileImages.WALL_ALONE,
-                 ( True, False, False, False): TileImages.WALL_VERT,
-                 ( False, True, False, False): TileImages.WALL_HORZ,
-                 ( True, True, False, False): TileImages.WALL_NE,
-                 ( False, False, True, False): TileImages.WALL_VERT,
-                 ( True, False, True, False): TileImages.WALL_VERT,
-                 ( False, True, True, False): TileImages.WALL_SE,
-                 ( True, True, True, False): TileImages.WALL_E,
-                 ( False, False, False, True): TileImages.WALL_HORZ,
-                 ( True, False, False, True): TileImages.WALL_NW,
-                 ( False, True, False, True): TileImages.WALL_HORZ,
-                 ( True, True, False, True): TileImages.WALL_N,
-                 ( False, False, True, True): TileImages.WALL_SW,
-                 ( True, False, True, True): TileImages.WALL_W,
-                 ( False, True, True, True): TileImages.WALL_S,
-                 ( True, True, True, True): TileImages.WALL_ALONE,
-                 }[m]
-            i = TileImages.WALL_ALONE
         else:
             raise ValueError("Bad type: " + str(type))
         self.sprite.image = i
+        self.sprite.color = c
         

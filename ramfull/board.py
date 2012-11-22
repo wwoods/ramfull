@@ -3,7 +3,7 @@ import pyglet
 import random
 
 from ramfull.tile import TileImages, Tile, TileTypes
-from ramfull.tileObject import Castle
+from ramfull.tileObject import Castle, Wall
         
 
 class Board(object):
@@ -44,7 +44,7 @@ class Board(object):
                     t.object = object 
         
         
-    def canPlace(self, x, y, w, h):
+    def canPlace(self, x, y, w, h, territoryOwner = None):
         for ix in range(x, x + w):
             for iy in range(y, y + h):
                 t = self.get(ix, iy)
@@ -53,6 +53,9 @@ class Board(object):
                 if t.object is not None:
                     return False
                 if t.type != TileTypes.GRASS:
+                    return False
+                if territoryOwner is not None and (
+                        not t.isTerritory or t.owner != territoryOwner):
                     return False
         return True
                 
@@ -72,8 +75,94 @@ class Board(object):
     
     
     def removeObj(self, obj):
-        raise NotImplementedError()
-    
+        self.tileObjs.remove(obj)
+        for tx in range(obj.x, obj.x + obj.tilesWide):
+            for ty in range(obj.y, obj.y + obj.tilesHigh):
+                t = self.get(tx, ty)
+                if t is not None:
+                    t.object = None
+                    
+                    
+    def territoryCheck(self, tilesToCheck = None):
+        """Using tilesToCheck as starting points, see if any of them are 
+        contained in new territory.
+        
+        tilesToCheck is an array of (x, y) coords
+        
+        If tilesToCheck is None, wipe all territory and do the whole board.
+        """
+        
+        if tilesToCheck is None:
+            tilesToCheck = []
+            for t in self.tiles:
+                t.isTerritory = False
+                t.update()
+                tilesToCheck.append((t.x, t.y))
+                
+        tilesChecked = set()
+        for x, y in tilesToCheck:
+            coords = (x,y)
+            baseTile = self.get(x, y)
+            if baseTile is None:
+                continue
+            
+            player = baseTile.owner
+            tilesToCheck = [ coords ]
+            tilesInTurf = set()
+            
+            noGood = False
+            
+            while len(tilesToCheck) > 0:
+                # Pop off top so that we travel in a straight line as long
+                # as we can.
+                coords = tilesToCheck.pop()
+                x, y = coords
+                i = y * self.width + x
+                if i in tilesInTurf:
+                    # This tile already processed
+                    continue
+                if i in tilesChecked:
+                    # Territory / not has already been decided for this
+                    # whole chunk; throw it out
+                    noGood = True
+                    break
+                
+                t = self.get(x, y)
+                if t is None or t.owner != player:
+                    # Whole chunk is invalid, we reached the border of 
+                    # player territory
+                    noGood = True
+                    break
+                
+                if isinstance(t.object, Wall):
+                    # It's walled, therefore a boundary.  Skip it
+                    continue
+                
+                # It's new to the turf and a valid part, add it
+                tilesInTurf.add(i)
+                
+                # At this point, it's valid turf, push our neighbors -
+                # including diagonals
+                tilesToCheck.append((x, y + 1))
+                tilesToCheck.append((x + 1, y))
+                tilesToCheck.append((x, y - 1))
+                tilesToCheck.append((x - 1, y))
+                tilesToCheck.append((x + 1, y + 1))
+                tilesToCheck.append((x + 1, y - 1))
+                tilesToCheck.append((x - 1, y - 1))
+                tilesToCheck.append((x - 1, y + 1))
+                
+            if not noGood:
+                for i in tilesInTurf:
+                    x = i % self.width
+                    y = int(i / self.width)
+                    t = self.get(x, y)
+                    t.isTerritory = True
+                    t.update()
+            
+            # Make sure no future passes check this tile
+            tilesChecked.update(tilesInTurf)
+
     
     def _generate(self, players):
         # Expand each player's territory by 1 tile at a time, until they hit
@@ -81,7 +170,7 @@ class Board(object):
         
         # Index clockwise from lower-left, non-inclusive
         borderMax = 2 * self.width + 2 * self.height
-        numPlayers = max(3, len(players))
+        numPlayers = max(2, len(players))
         pInterval = int(borderMax / numPlayers)
         
         playerTurfs = {}
@@ -161,6 +250,10 @@ class Board(object):
                 else:
                     t.owner = None
                     
+        # Update graphics
+        for t in self.tiles:
+            t.update()
+                    
         # Sprinkle castles...  castles need room for at least one cannon
         # between the wall and the castle, and then a surrounding wall and
         # a one-tile barrier.
@@ -188,7 +281,7 @@ class Board(object):
                         break
                     
             if isOk:
-                castle = Castle(x, y)
+                castle = Castle(x, y, minX + 1, maxX - 1, minY + 1, maxY - 1)
                 self.addObj(castle)
                 for cx in range(minX, maxX + 1):
                     for cy in range(minY, maxY + 1):

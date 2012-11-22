@@ -5,9 +5,9 @@ from pyglet_piss import Actions
 from ramfull.tile import Tile, TileTypes
 from ramfull.images import PlayerImages
 
-from ramfull.playerLayer import PlayerLayer
+from ramfull.gamePhaseLayer import GamePhaseLayer
 
-class GodLayer(PlayerLayer):
+class GodLayer(GamePhaseLayer):
     def onAction(self, player, action):
         if not player.inGame:
             return
@@ -18,7 +18,7 @@ class GodLayer(PlayerLayer):
             t = self.board.get(x, y)
             t.setType((t.type + 1) % TileTypes.MAX)
         else:
-            return PlayerLayer.onAction(player, action)
+            return GamePhaseLayer.onAction(player, action)
         return True
     
     

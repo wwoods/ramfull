@@ -4,9 +4,9 @@ from pyglet_piss import Scene
 
 from ramfull.board import Board
 from ramfull.godLayer import GodLayer
-from ramfull.placeLayer import PlaceLayer
-from ramfull.player import RamfullPlayer
+from ramfull.selectCastle import SelectCastleLayer
 from ramfull.tile import Tile
+from images import PlayerImages
 
 class GameScene(Scene):
     
@@ -19,18 +19,28 @@ class GameScene(Scene):
     def _sceneInit(self, app):
         Scene._sceneInit(self, app)
         
-        bw = int(self.window.width / Tile.SIZE)
-        bh = int(self.window.height / Tile.SIZE)
-        self.board = Board(bw, bh, self.app.players)
-        
         for p in self.app.players:
-            p.inGame = RamfullPlayer()
+            p.inGame = None
+            p.name = PlayerImages.names[p.id]
         
-        self.addLayer(PlaceLayer())
+        self.remakeBoard()
+        
+        #self.addLayer(SelectCastleLayer())
+        from optInLayer import OptInLayer
+        self.addLayer(OptInLayer())
     
     
     def onDraw(self):
         self.window.clear()
         self.board.draw()
-    
         
+        
+    def remakeBoard(self):
+        bw = int(self.window.width / Tile.SIZE)
+        bh = int(self.window.height / Tile.SIZE)
+        players = []
+        for p in self.app.players:
+            if p.inGame:
+                players.append(p)
+        self.board = Board(bw, bh, players)
+    

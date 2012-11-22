@@ -8,4 +8,9 @@ from ramfull.game import GameScene
 
 import pyglet_piss
 pyglet_piss.Actions.RECURRING_INTERVAL = 0.05
-pyglet_piss.app.run(GameScene())
+conf = pyglet_piss.Config()
+conf.merge('game.ini', noExistOk = True)
+conf.merge('game_local.ini', noExistOk = True)
+conf.save('game_local.ini')
+
+pyglet_piss.app.run(conf, GameScene())
