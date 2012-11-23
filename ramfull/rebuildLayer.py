@@ -8,6 +8,7 @@ from firePhase import FirePhase
 
 from tile import Tile
 from tileObject import Wall
+from sounds import AllSounds
 
 class Piece(object):
     WIDTH = 3
@@ -85,6 +86,12 @@ class RebuildLayer(GamePhaseLayer):
             if not p.inGame:
                 continue
             self.playerMap[p] = { 'piece': self._nextPiece(), 'rotate': 0 }
+            # Move each player back to their castle
+            p.inGame.x = p.inGame.homeX
+            p.inGame.y = p.inGame.homeY
+            
+        # Wait for update to let players place tiles 
+        self.hasUpdated = False
     
     
     def drawPlayer(self, p, x, y):
@@ -110,9 +117,11 @@ class RebuildLayer(GamePhaseLayer):
         
     def onAction(self, player, action):
         if not player.inGame:
-            return 
+            return super(RebuildLayer, self).onAction(player, action)
         
         if action == Actions.BTN1:
+            if not self.hasUpdated:
+                return super(RebuildLayer, self).onAction(player, action)
             if self.playerMap[player]['piece'] is not None:
                 walls, _ = self._getPlayerPiece(player)
                 if self._canPlace(player, walls):
@@ -131,6 +140,7 @@ class RebuildLayer(GamePhaseLayer):
     
     
     def onUpdate(self, dt):
+        self.hasUpdated = True
         super(RebuildLayer, self).onUpdate(dt)
         if self.timer is None:
             self.secondTimer -= dt
@@ -180,7 +190,10 @@ class RebuildLayer(GamePhaseLayer):
         for ix in range(-2, 3):
             for iy in range(-2, 3):
                 toCheck.append((px + ix, py + iy))
-        board.territoryCheck(toCheck)
+        if board.territoryCheck(toCheck):
+            AllSounds.NEW_TERRITORY.play(minTime = 0.7)
+        else:
+            AllSounds.WALL.play(minTime = 0.3, maxInstances = 3)
                 
         pm = self.playerMap[player]
         pm['rotate'] = 0

@@ -90,6 +90,8 @@ class Board(object):
         tilesToCheck is an array of (x, y) coords
         
         If tilesToCheck is None, wipe all territory and do the whole board.
+        
+        Returns True if anything resulted in new territory; false otherwise.
         """
         
         if tilesToCheck is None:
@@ -99,6 +101,7 @@ class Board(object):
                 t.update()
                 tilesToCheck.append((t.x, t.y))
                 
+        newTerritory = False
         tilesChecked = set()
         for x, y in tilesToCheck:
             coords = (x,y)
@@ -157,11 +160,15 @@ class Board(object):
                     x = i % self.width
                     y = int(i / self.width)
                     t = self.get(x, y)
-                    t.isTerritory = True
-                    t.update()
+                    if not t.isTerritory:
+                        newTerritory = True
+                        t.isTerritory = True
+                        t.update()
             
             # Make sure no future passes check this tile
             tilesChecked.update(tilesInTurf)
+            
+        return newTerritory
 
     
     def _generate(self, players):

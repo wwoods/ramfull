@@ -6,6 +6,7 @@ from pyglet_piss import Actions
 from ramfull.firePhase import FirePhase
 from ramfull.images import TileObjectImages
 from ramfull.gamePhaseLayer import GamePhaseLayer
+from sounds import AllSounds
 from ramfull.tile import Tile
 from ramfull.tileObject import Castle, Cannon
 
@@ -19,7 +20,7 @@ class PlaceCannonInfo(object):
 class PlaceLayer(GamePhaseLayer):
     
     TICKER = 'PLACE CANNONS'
-    TIMER = 20.0
+    TIMER = 10.0
     
     def _layerInit(self, scene):
         self.scene = scene
@@ -27,6 +28,17 @@ class PlaceLayer(GamePhaseLayer):
         # Players might build over there territory, so remove that so as not
         # to confuse whether or not a player can place any cannons
         self.scene.board.territoryCheck()
+        
+        castlesPerPlayer = {}
+        for p in self.scene.app.players:
+            castlesPerPlayer[p] = 0
+            
+        for to in self.scene.board.tileObjs:
+            if not isinstance(to, Castle):
+                continue
+            t = self.scene.board.get(to.x, to.y)
+            if t.isTerritory:
+                castlesPerPlayer[t.owner] += 1
          
         hadCannons = False
         self.placer = pyglet.sprite.Sprite(TileObjectImages.UNKNOWN)
@@ -35,7 +47,7 @@ class PlaceLayer(GamePhaseLayer):
         self.placeInfo = {}
         for p in self.scene.app.players:
             if p.inGame:
-                self.placeInfo[p] = PlaceCannonInfo(p, 2)
+                self.placeInfo[p] = PlaceCannonInfo(p, 2 + castlesPerPlayer[p])
                 if not self._checkPlayerSpace(p):
                     self.placeInfo[p].numCannons = 0
                 else:
@@ -92,6 +104,7 @@ class PlaceLayer(GamePhaseLayer):
                 if obj.canPlace(player, self.board, x, y):
                     c = obj(x, y)
                     self.board.addObj(c)
+                    AllSounds.WALL.play(minTime = 0.3, maxInstances = 3)
                     pi.numCannons -= obj.cannonCount
                     if pi.numCannons > 0 and not self._checkPlayerSpace(player):
                         pi.numCannons = 0

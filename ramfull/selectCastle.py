@@ -3,6 +3,7 @@ from pyglet_piss import Actions
 from placeLayer import PlaceLayer
 from gamePhaseLayer import GamePhaseLayer
 from tileObject import Castle
+from sounds import AllSounds
 
 class SelectCastleLayer(GamePhaseLayer):
     TICKER = "SELECT A CASTLE"
@@ -23,6 +24,8 @@ class SelectCastleLayer(GamePhaseLayer):
                         castles.append(c)
             self._playerMap[p] = { 'castles': castles, 'walls': [] }
             self._cycle(p, 1)
+            
+        self.hasUpdated = False
         
         
     def drawPlayer(self, p, x, y):
@@ -34,7 +37,7 @@ class SelectCastleLayer(GamePhaseLayer):
         
     def onAction(self, player, action):
         if not player.inGame:
-            return False
+            return super(SelectCastleLayer, self).onAction(player, action)
         
         if self._playerMap[player].get('isDone'):
             return True
@@ -44,7 +47,10 @@ class SelectCastleLayer(GamePhaseLayer):
         elif action == Actions.TAP_RIGHT or action == Actions.TAP_DOWN:
             self._cycle(player, 1)
         elif action == Actions.BTN1:
+            if not self.hasUpdated:
+                return super(SelectCastleLayer, self).onAction(player, action)
             self._playerMap[player]['isDone'] = True
+            AllSounds.NEW_TERRITORY.play(minTime = 0.4)
         else:
             return False
         return True
@@ -56,6 +62,7 @@ class SelectCastleLayer(GamePhaseLayer):
     
     
     def onUpdate(self, dt):
+        self.hasUpdated = True
         super(SelectCastleLayer, self).onUpdate(dt)
         
         allDone = True
@@ -85,6 +92,8 @@ class SelectCastleLayer(GamePhaseLayer):
         c = pi['castles'][nci]
         p.inGame.x = c.x
         p.inGame.y = c.y
+        p.inGame.homeX = c.x
+        p.inGame.homeY = c.y
         
         if ci >= 0:
             oc = pi['castles'][ci]

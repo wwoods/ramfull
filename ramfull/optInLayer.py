@@ -49,5 +49,5 @@ class OptInLayer(GamePhaseLayer):
         
     def onUpdate(self, dt):
         if self.timer >= self.timerFastUntil:
-            dt *= 4
+            dt *= 8
         super(OptInLayer, self).onUpdate(dt)

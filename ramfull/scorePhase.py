@@ -8,7 +8,7 @@ from images import PlayerImages
 
 class ScorePhase(GamePhaseLayer):
     TICKER = None
-    TIMER = 5
+    TIMER = 2
     
     def _layerInit(self, scene):
         super(ScorePhase, self)._layerInit(scene)

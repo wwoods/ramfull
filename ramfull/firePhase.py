@@ -5,6 +5,7 @@ import pyglet
 from pyglet_piss import Actions
 from ramfull.gamePhaseLayer import GamePhaseLayer
 from images import TileObjectImages
+from sounds import AllSounds
 from tile import Tile
 from tileObject import Cannon
 
@@ -20,6 +21,7 @@ class CannonBall(pyglet.sprite.Sprite):
         self.time = dist / 10.0
         self.dist = dist
         self.maxTime = self.time
+        AllSounds.CANNON.play(minTime = 0.4, maxInstances = 3)
         
         
     def update(self, dt):
@@ -27,6 +29,7 @@ class CannonBall(pyglet.sprite.Sprite):
         if self.time < 0:
             # DONE!  Remove from batch and tell PhaseData to remove us
             self.delete()
+            AllSounds.HIT.play(minTime = 0.3, maxInstances = 2, volume = 0.1)
             return True
         
         baseX = (self.cannon.x + self.cannon.tilesWide * 0.5) * Tile.SIZE
@@ -107,7 +110,10 @@ class FirePhase(GamePhaseLayer):
             if not p.inGame:
                 continue
             self.playerMap[p] = FirePhaseData(self.scene.board)
+            
+        # Make sure anyone CAN fire.  Also, restore the health of all TileObjs.
         for t in self.scene.board.tileObjs:
+            t.health = t.HEALTH
             if not isinstance(t, Cannon):
                 continue
             

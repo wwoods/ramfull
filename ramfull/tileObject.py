@@ -170,5 +170,5 @@ class Cannon(PlaceableTileObject):
     tilesHigh = 2
     
     DEFAULT_IMAGE = TileObjectImages.CANNON
-    HEALTH = 8
+    HEALTH = 16
     
