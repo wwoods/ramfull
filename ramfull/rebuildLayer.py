@@ -72,7 +72,7 @@ pieces = [ Piece(p) for p in pieces ]
 class RebuildLayer(GamePhaseLayer):
     
     TICKER = "REBUILD"
-    TIMER = 20.0
+    TIMER = 24.0
     
     def _layerInit(self, scene):
         super(RebuildLayer, self)._layerInit(scene)
