@@ -13,6 +13,9 @@ class ScorePhase(GamePhaseLayer):
     def _layerInit(self, scene):
         super(ScorePhase, self)._layerInit(scene)
         
+        # No longer first round!
+        scene.isFirstRound = False
+        
         self.text = pyglet.text.HTMLLabel(anchor_x = 'center', 
                 anchor_y = 'center', width = self.window.width, 
                 multiline = True)

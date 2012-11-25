@@ -1,3 +1,3 @@
 #! /bin/bash
-#~/pygamePypy/bin/python --jit threshold=10000 run.py
+#~/pygamePypy/bin/python --jit threshold=1000 --jit loop_longevity=5000 run.py
 /usr/bin/python run.py

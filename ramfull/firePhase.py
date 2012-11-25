@@ -21,7 +21,7 @@ class CannonBall(pyglet.sprite.Sprite):
         self.time = dist / 10.0
         self.dist = dist
         self.maxTime = self.time
-        AllSounds.CANNON.play(minTime = 0.4, maxInstances = 3)
+        AllSounds.CANNON.play(minTime = 0.4, maxInstances = 6)
         
         
     def update(self, dt):
@@ -29,7 +29,7 @@ class CannonBall(pyglet.sprite.Sprite):
         if self.time < 0:
             # DONE!  Remove from batch and tell PhaseData to remove us
             self.delete()
-            AllSounds.HIT.play(minTime = 0.3, maxInstances = 2, volume = 0.1)
+            AllSounds.HIT.play(minTime = 0.3, maxInstances = 4, volume = 0.1)
             return True
         
         baseX = (self.cannon.x + self.cannon.tilesWide * 0.5) * Tile.SIZE

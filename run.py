@@ -13,4 +13,8 @@ conf.merge('game.ini', noExistOk = True)
 conf.merge('game_local.ini', noExistOk = True)
 conf.save('game_local.ini')
 
+import statprof
+statprof.start()
 pyglet_piss.app.run(conf, GameScene())
+statprof.stop()
+statprof.display()

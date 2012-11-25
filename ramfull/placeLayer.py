@@ -29,6 +29,11 @@ class PlaceLayer(GamePhaseLayer):
         # to confuse whether or not a player can place any cannons
         self.scene.board.territoryCheck()
         
+        baseCannons = 1
+        if self.scene.isFirstRound:
+            # Extra cannon for round one
+            baseCannons = 2
+        
         castlesPerPlayer = {}
         for p in self.scene.app.players:
             castlesPerPlayer[p] = 0
@@ -47,7 +52,8 @@ class PlaceLayer(GamePhaseLayer):
         self.placeInfo = {}
         for p in self.scene.app.players:
             if p.inGame:
-                self.placeInfo[p] = PlaceCannonInfo(p, 2 + castlesPerPlayer[p])
+                self.placeInfo[p] = PlaceCannonInfo(p,
+                        baseCannons + castlesPerPlayer[p])
                 if not self._checkPlayerSpace(p):
                     self.placeInfo[p].numCannons = 0
                 else:

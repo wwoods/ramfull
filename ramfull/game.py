@@ -11,13 +11,13 @@ from images import PlayerImages
 class GameScene(Scene):
     
     showFps = True
-    
-    def __init__(self):
-        Scene.__init__(self)
         
         
     def _sceneInit(self, app):
         Scene._sceneInit(self, app)
+        
+        # Unset by ScorePhase.
+        self.isFirstRound = True
         
         for p in self.app.players:
             p.inGame = None

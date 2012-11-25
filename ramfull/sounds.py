@@ -1,6 +1,7 @@
 
 import os, re
 import pyglet
+import time
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 class SoundsLoader(object):
@@ -32,12 +33,12 @@ class SoundsLoader(object):
 
 # REALLY shitty sound mixer...
 channels = []
-for i in range(4):
+for i in range(14):
     p = pyglet.media.Player()
     p.eos_action = 'stop'
     # Fill in our variables...
     p.wrapSound = None
-    p.minTime = 0.0
+    p.minEndTime = 0.0
     channels.append(p)
     
     
@@ -48,23 +49,26 @@ class SoundWrapper(object):
         
     
     def play(self, maxInstances = None, minTime = 9000.0, volume = 1.0):
+        """NOTE - AVOID all pyglet OpenAL properties, that driver is shit.
+        """
         useChannel = None
         oldChannel = None
         oldSelfChannel = None
         okInstances = 0
+        now = time.time()
         for c in channels:
-            if not c.playing:
+            if c.minEndTime == 0:
                 useChannel = c
                 break
-            elif c.time >= c.minTime:
+            elif now >= c.minEndTime:
                 if (oldChannel is None 
-                        or oldChannel.time - oldChannel.minTime 
-                                <= c.time - c.minTime):
+                        or now - oldChannel.minEndTime 
+                                <= now - c.minEndTime):
                     oldChannel = c
                 if c.wrapSound == self and (
                         oldSelfChannel is None
-                        or oldSelfChannel.time - oldSelfChannel.minTime
-                                <= c.time - c.minTime):
+                        or now - oldSelfChannel.minEndTime
+                                <= now - c.minEndTime):
                     oldSelfChannel = c
             elif c.wrapSound == self:
                 okInstances += 1
@@ -86,17 +90,17 @@ class SoundWrapper(object):
                 return
             useChannel = oldChannel
         
-        # Using an old channel?
+        # Using an old channel?  Has it played?  Clean it.
         if useChannel.wrapSound is not None:
             useChannel.wrapSound.instances -= 1
+            useChannel._audio_player.delete()
+            useChannel.__init__()
             
-        # Pyglet's sound as of 1.2alpha1 is broken, so we have to manually
-        # fast-forward... also handy in case we want to "crop" sounds
-        useChannel.next()
+        # Queue the sound, set it up, and go!
         useChannel.queue(self.snd)
         useChannel.volume = volume
         # Only "truncate" this sound after the min time
-        useChannel.minTime = min(minTime, self.snd.duration)
+        useChannel.minEndTime = now + min(minTime, self.snd.duration)
         useChannel.wrapSound = self
         self.instances += 1
         useChannel.play()
