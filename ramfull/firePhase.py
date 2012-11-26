@@ -60,6 +60,18 @@ class FirePhaseData(object):
         self.batch.draw()
         
         
+    def getReadyCannon(self):
+        """Returns a Cannon object that can fire, or None for not able to
+        fire.
+        """
+        cannon = None
+        for c in self.cannons:
+            if c not in self.cannonBalls:
+                cannon = c
+                break
+        return cannon
+        
+        
     def isDone(self):
         if len(self.cannonBalls) == 0:
             return True
@@ -67,18 +79,14 @@ class FirePhaseData(object):
         
         
     def tryFire(self, x, y):
-        self._cleanCannons()
-        cannon = None
-        for c in self.cannons:
-            if c not in self.cannonBalls:
-                cannon = c
-                break
+        cannon = self.getReadyCannon()
         if cannon is None:
             return
         self.cannonBalls[cannon] = CannonBall(self.batch, cannon, x, y)
         
         
     def update(self, dt):
+        self._cleanCannons()
         for cannon, ball in self.cannonBalls.items():
             if not ball.update(dt):
                 continue
@@ -135,7 +143,11 @@ class FirePhase(GamePhaseLayer):
         
     
     def drawPlayer(self, p, x, y):
-        self.drawCursor(p, x, y)
+        fpd = self.playerMap[p]
+        if fpd.getReadyCannon() is not None:
+            self.drawCursorGrand(p, x, y)
+        else:
+            self.drawCursor(p, x, y)
         
         
     def onAction(self, player, action):

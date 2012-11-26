@@ -32,13 +32,13 @@ class GamePhaseLayer(Layer):
     
     
     def drawCursor(self, p, x, y):
-        self.cursor.image = PlayerImages.PLAYER_OUTLINE
+        self.cursor.image = PlayerImages.PLAYER_COLOR
         self.cursor.color = PlayerImages.colors[p.id]
         self.cursor.x = x
         self.cursor.y = y
         self.cursor.draw()
         
-        self.cursor.image = PlayerImages.PLAYER_COLOR
+        self.cursor.image = PlayerImages.PLAYER_NONCOLOR
         self.cursor.color = (255, 255, 255)
         self.cursor.draw()
         
@@ -52,32 +52,33 @@ class GamePhaseLayer(Layer):
         xo = 0
         yo = 0
         if orient == 'ul':
-            oi = PlayerImages.PLAYER_OUTLINE_UL
+            oi = PlayerImages.PLAYER_NONCOLOR_UL
             ci = PlayerImages.PLAYER_COLOR_UL
             yo = Tile.SIZE * 0.5
         elif orient == 'ur':
-            oi = PlayerImages.PLAYER_OUTLINE_UR
+            oi = PlayerImages.PLAYER_NONCOLOR_UR
             ci = PlayerImages.PLAYER_COLOR_UR
             xo = Tile.SIZE * 0.5
             yo = Tile.SIZE * 0.5
         elif orient == 'lr':
-            oi = PlayerImages.PLAYER_OUTLINE_LR
+            oi = PlayerImages.PLAYER_NONCOLOR_LR
             ci = PlayerImages.PLAYER_COLOR_LR
             xo = Tile.SIZE * 0.5
         elif orient == 'll':
-            oi = PlayerImages.PLAYER_OUTLINE_LL
+            oi = PlayerImages.PLAYER_NONCOLOR_LL
             ci = PlayerImages.PLAYER_COLOR_LL
         else:
             raise ValueError("Unknown orient: " + str(orient))
         
-        self.cursor.image = oi
-        self.cursor.color = PlayerImages.colors[p.id]
         self.cursor.x = x + xo
         self.cursor.y = y + yo
+        
+        self.cursor.image = oi
+        self.cursor.color = (255, 255, 255)
         self.cursor.draw()
         
         self.cursor.image = ci
-        self.cursor.color = (255, 255, 255)
+        self.cursor.color = PlayerImages.colors[p.id]
         self.cursor.draw()
             
             
@@ -90,6 +91,23 @@ class GamePhaseLayer(Layer):
         self.drawCursorCorner(p, rx, y, 'lr')
         self.drawCursorCorner(p, rx, ry, 'ur')
         self.drawCursorCorner(p, x, ry, 'ul')
+        
+        
+    def drawCursorGrand(self, p, x, y):
+        """Draw a special 3x3 cursor centered on the tile at x, y
+        """
+        rx = x - Tile.SIZE
+        ry = y - Tile.SIZE
+        self.cursor.x = rx
+        self.cursor.y = ry
+        
+        self.cursor.color = (255, 255, 255)
+        self.cursor.image = PlayerImages.PLAYERLARGE_NONCOLOR
+        self.cursor.draw()
+        
+        self.cursor.color = PlayerImages.colors[p.id]
+        self.cursor.image = PlayerImages.PLAYERLARGE_COLOR
+        self.cursor.draw()
     
     
     def drawPlayer(self, p, x, y):

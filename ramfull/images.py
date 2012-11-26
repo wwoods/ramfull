@@ -50,7 +50,7 @@ def split4(name):
     setattr(PlayerImages, name + '_UR', ig[3])
     setattr(PlayerImages, name + '_LR', ig[1])
     setattr(PlayerImages, name + '_LL', ig[0])
-split4("PLAYER_OUTLINE")
+split4("PLAYER_NONCOLOR")
 split4("PLAYER_COLOR")
 
 PlayerImages.colors = [ 
