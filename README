@@ -1,0 +1,8 @@
+# Ramfull
+
+Like rampart, but for N players with controllers!  Yay USB hubs!
+
+## Playing
+
+Clone this repo, clone pyglet_piss into somewhere in your PYTHONPATH, and
+then just execute run.py.
